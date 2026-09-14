@@ -3,6 +3,7 @@ import json
 import requests
 
 from finance_agent.classifier import ExpenseClassification
+from finance_agent.exceptions import MissingToolCallError
 
 
 class FinanceAgent:
@@ -34,12 +35,14 @@ class FinanceAgent:
         response.raise_for_status()
         data = response.json()
 
-        # Extraemos los argumentos devueltos por el LLM en el tool_call
-        tool_call = data["choices"][0]["message"]["tool_calls"][0]
-        arguments_str = tool_call["function"]["arguments"]
+        try:
+            tool_call = data["choices"][0]["message"]["tool_calls"][0]
+            arguments_str = tool_call["function"]["arguments"]
+            arguments_dict = json.loads(arguments_str)
 
-        # Los argumentos vienen como string JSON; los parseamos a diccionario
-        arguments_dict = json.loads(arguments_str)
+            return ExpenseClassification(**arguments_dict)
 
-        # Instanciamos y devolvemos tu modelo Pydantic (esto aplicará las validaciones automáticamente)
-        return ExpenseClassification(**arguments_dict)
+        except (KeyError, IndexError):
+            raise MissingToolCallError(
+                "No se encontró la llamada a la herramienta requerida en la respuesta."
+            )

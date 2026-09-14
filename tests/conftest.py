@@ -80,3 +80,11 @@ def mock_response_food():
         ],
         "usage": {"prompt_tokens": 10, "completion_tokens": 5},
     }
+
+
+@pytest.fixture
+def mock_response_no_tool_call():
+    return {
+        "choices": [{"message": {"tool_calls": []}}],
+        "usage": {"prompt_tokens": 10, "completion_tokens": 5},
+    }
