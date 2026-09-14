@@ -46,18 +46,16 @@ class TestAgent:
         )
 
         agent = FinanceAgent(model="google/gemma-4-12b-qat")
-        result = agent.classify_expense("Compré comida en el supermercado")
-
-        assert len(responses.calls) == 1
-        assert responses.calls[0].request.method == "POST"
+        agent.classify_expense("Compré comida en el supermercado")
 
         request_data = json.loads(responses.calls[0].request.body)
         assert request_data["model"] == "google/gemma-4-12b-qat"
-
-        assert isinstance(result, ExpenseClassification)
-        assert result.category == "transportation"
-        assert result.confidence == 0.8
-        assert result.reasoning == "business"
+        assert (
+            request_data["messages"][0]["content"] == "Compré comida en el supermercado"
+        )
+        assert request_data["messages"][0]["role"] == "user"
+        assert request_data["tools"][0]["type"] == "function"
+        assert request_data["tools"][0]["function"]["name"] == "ExpenseClassification"
 
     @responses.activate
     def test_classify_expense_parses_valid_response(self, mock_response):
