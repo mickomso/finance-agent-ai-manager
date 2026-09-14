@@ -5,7 +5,7 @@ import responses
 
 from finance_agent.agent import FinanceAgent
 from finance_agent.classifier import ExpenseClassification
-from finance_agent.exceptions import MissingToolCallError
+from finance_agent.exceptions import MalformedArgumentsError, MissingToolCallError
 
 
 class TestAgent:
@@ -64,5 +64,17 @@ class TestAgent:
         with pytest.raises(MissingToolCallError):
             agent.classify_expense("Compré comida en el supermercado")
 
-    def test_classify_expense_raises_on_malformed_arguments(self):
-        pass
+    @responses.activate
+    def test_classify_expense_raises_on_malformed_arguments(
+        self, mock_response_malformed_arguments, expected_model
+    ):
+        responses.add(
+            responses.POST,
+            "http://localhost:1234/v1/chat/completions",
+            json=mock_response_malformed_arguments,
+            status=200,
+        )
+        agent = FinanceAgent(model=expected_model)
+
+        with pytest.raises(MalformedArgumentsError):
+            agent.classify_expense("Compré comida en el supermercado")

@@ -3,7 +3,7 @@ import json
 import requests
 
 from finance_agent.classifier import ExpenseClassification
-from finance_agent.exceptions import MissingToolCallError
+from finance_agent.exceptions import MalformedArgumentsError, MissingToolCallError
 
 
 class FinanceAgent:
@@ -36,13 +36,30 @@ class FinanceAgent:
         data = response.json()
 
         try:
-            tool_call = data["choices"][0]["message"]["tool_calls"][0]
+            message = data["choices"][0]["message"]
+            tool_calls = message.get("tool_calls")
+
+            if not tool_calls:
+                raise MissingToolCallError(
+                    "El LLM no devolvió ninguna llamada a herramienta."
+                )
+
+            tool_call = tool_calls[0]
             arguments_str = tool_call["function"]["arguments"]
-            arguments_dict = json.loads(arguments_str)
 
-            return ExpenseClassification(**arguments_dict)
+            # Intentamos parsear los argumentos como JSON
+            try:
+                arguments_dict = json.loads(arguments_str)
+            except json.JSONDecodeError as e:
+                raise MalformedArgumentsError(
+                    "Los argumentos del tool_call no son un JSON válido."
+                ) from e
 
-        except (KeyError, IndexError):
+        except (KeyError, IndexError) as e:
+            if isinstance(e, MalformedArgumentsError):
+                raise
             raise MissingToolCallError(
-                "No se encontró la llamada a la herramienta requerida en la respuesta."
-            )
+                "La estructura de la respuesta del LLM es inválida."
+            ) from e
+
+        return ExpenseClassification(**arguments_dict)

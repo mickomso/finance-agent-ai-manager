@@ -88,3 +88,24 @@ def mock_response_no_tool_call():
         "choices": [{"message": {"tool_calls": []}}],
         "usage": {"prompt_tokens": 10, "completion_tokens": 5},
     }
+
+
+@pytest.fixture
+def mock_response_malformed_arguments():
+    return {
+        "choices": [
+            {
+                "message": {
+                    "tool_calls": [
+                        {
+                            "function": {
+                                "name": "ExpenseClassification",
+                                "arguments": "{malformed_json}",
+                            }
+                        }
+                    ]
+                }
+            }
+        ],
+        "usage": {"prompt_tokens": 10, "completion_tokens": 5},
+    }
