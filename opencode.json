@@ -1,0 +1,16 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "model": "xai/grok-4.5",
+  "providers": {
+    "xai": {
+      "settings": {
+        "baseURL": "https://api.x.ai/v1"
+      },
+      "models": {
+        "grok-4.5": {
+          "name": "Grok 4.5"
+        }
+      }
+    }
+  }
+}
