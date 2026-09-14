@@ -20,3 +20,7 @@ class TestExpenseClassification:
             ExpenseClassification(
                 category="invalid_category", confidence=0.9, reasoning="personal"
             )
+
+    def test_classification_rejects_confidence_out_of_range(self):
+        with pytest.raises(ValidationError):
+            ExpenseClassification(category="food", confidence=1.5, reasoning="personal")
