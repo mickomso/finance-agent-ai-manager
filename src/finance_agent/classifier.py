@@ -1,13 +1,17 @@
-class ExpenseClassification:
-    def classify(self, expense):
-        class Result:
-            def __init__(self, category, confidence, reasoning):
-                self.category = category
-                self.confidence = confidence
-                self.reasoning = reasoning
+from enum import Enum
 
-        return Result(
-            category=expense.get("category"),
-            confidence=expense.get("confidence"),
-            reasoning=expense.get("reasoning"),
-        )
+from pydantic import BaseModel
+
+
+class CategoryEnum(str, Enum):
+    FOOD = "food"
+    TRANSPORTATION = "transportation"
+    ENTERTAINMENT = "entertainment"
+    UTILITIES = "utilities"
+    OTHER = "other"
+
+
+class ExpenseClassification(BaseModel):
+    category: CategoryEnum
+    confidence: float
+    reasoning: str
