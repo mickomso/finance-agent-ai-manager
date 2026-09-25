@@ -2,7 +2,19 @@ import json
 
 import pytest
 
+from finance_agent.agent import configure_structlog
 from finance_agent.classifier import ExpenseClassification
+
+
+@pytest.fixture(autouse=True)
+def _reset_structlog():
+    """Reinstate the app's structlog config before each test.
+
+    Tests that reconfigure structlog for their own purposes (e.g. to
+    capture log entries) would otherwise leak that config into whichever
+    test runs next.
+    """
+    configure_structlog()
 
 
 @pytest.fixture
@@ -68,6 +80,87 @@ def mock_response_food():
                                 "arguments": json.dumps(
                                     {
                                         "category": "food",
+                                        "confidence": 0.8,
+                                        "reasoning": "business",
+                                    }
+                                ),
+                            }
+                        }
+                    ]
+                }
+            }
+        ],
+        "usage": {"prompt_tokens": 10, "completion_tokens": 5},
+    }
+
+
+@pytest.fixture
+def mock_response_groceries():
+    return {
+        "choices": [
+            {
+                "message": {
+                    "tool_calls": [
+                        {
+                            "function": {
+                                "name": "ExpenseClassification",
+                                "arguments": json.dumps(
+                                    {
+                                        "category": "groceries",
+                                        "confidence": 0.8,
+                                        "reasoning": "business",
+                                    }
+                                ),
+                            }
+                        }
+                    ]
+                }
+            }
+        ],
+        "usage": {"prompt_tokens": 10, "completion_tokens": 5},
+    }
+
+
+@pytest.fixture
+def mock_response_valid_category():
+    return {
+        "choices": [
+            {
+                "message": {
+                    "tool_calls": [
+                        {
+                            "function": {
+                                "name": "ExpenseClassification",
+                                "arguments": json.dumps(
+                                    {
+                                        "category": "food",
+                                        "confidence": 0.8,
+                                        "reasoning": "business",
+                                    }
+                                ),
+                            }
+                        }
+                    ]
+                }
+            }
+        ],
+        "usage": {"prompt_tokens": 10, "completion_tokens": 5},
+    }
+
+
+@pytest.fixture
+def mock_response_invalid_category():
+    return {
+        "choices": [
+            {
+                "message": {
+                    "tool_calls": [
+                        {
+                            "function": {
+                                "name": "ExpenseClassification",
+                                "arguments": json.dumps(
+                                    {
+                                        "category": "invalid_category",
                                         "confidence": 0.8,
                                         "reasoning": "business",
                                     }
